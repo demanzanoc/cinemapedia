@@ -30,18 +30,20 @@ class _HomeViewState extends ConsumerState<_HomeView> {
     super.initState();
     ref.read(nowPlayingMoviesProvider.notifier).loadNextPage();
     ref.read(popularMoviesProvider.notifier).loadNextPage();
+    ref.read(topRatedMoviesProvider.notifier).loadNextPage();
+    ref.read(upcomingMoviesProvider.notifier).loadNextPage();
   }
 
   @override
   Widget build(BuildContext context) {
-    final nowPlayingMovies = ref.watch(nowPlayingMoviesProvider);
+    final isLoading = ref.watch(initialLoadingProvider);
+    if (isLoading) return const FullScreenLoader();
+
     final slideshowMovies = ref.watch(moviesSlideshowProvider);
+    final nowPlayingMovies = ref.watch(nowPlayingMoviesProvider);
     final popularMovies = ref.watch(popularMoviesProvider);
-    if (slideshowMovies.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
+    final topRatedMovies = ref.watch(topRatedMoviesProvider);
+    final upcomingMovies = ref.watch(upcomingMoviesProvider);
     return CustomScrollView(
       slivers: [
         const SliverAppBar(
@@ -69,8 +71,23 @@ class _HomeViewState extends ConsumerState<_HomeView> {
                     movies: popularMovies,
                     title: 'Populares',
                     //subtitle: 'En este mes',
+                    loadNextPage: () =>
+                        ref.read(popularMoviesProvider.notifier).loadNextPage(),
+                  ),
+                  MovieHorizontalListview(
+                    movies: topRatedMovies,
+                    title: 'Mejor calificadas',
+                    subtitle: 'Para disfrutar',
                     loadNextPage: () => ref
-                        .read(popularMoviesProvider.notifier)
+                        .read(topRatedMoviesProvider.notifier)
+                        .loadNextPage(),
+                  ),
+                  MovieHorizontalListview(
+                    movies: upcomingMovies,
+                    title: 'Próximamente',
+                    subtitle: 'En este mes',
+                    loadNextPage: () => ref
+                        .read(upcomingMoviesProvider.notifier)
                         .loadNextPage(),
                   ),
                   const SizedBox(height: 10),
