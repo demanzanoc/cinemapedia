@@ -17,12 +17,17 @@ class MovieRepositoryImpl extends MoviesRepository {
 
   @override
   Future<List<Movie>> getTopRated({int page = 1}) =>
-    datasource.getTopRated(page: page);
+      datasource.getTopRated(page: page);
 
   @override
   Future<List<Movie>> getUpcoming({int page = 1}) =>
       datasource.getUpcoming(page: page);
 
   @override
-  Future<Movie> getMovieById(String movieId) => datasource.getMovieById(movieId);
+  Future<Movie> getMovieById(String movieId) =>
+      datasource.getMovieById(movieId);
+
+  @override
+  Future<List<Movie>> searchMovies(String query) =>
+      datasource.searchMovies(query);
 }
