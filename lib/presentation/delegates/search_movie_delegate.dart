@@ -12,6 +12,7 @@ class SearchMovieDelegate extends SearchDelegate<Movie?> {
   final SearchMovieCallback searchMovies;
   List<Movie> initialMovies;
   StreamController<List<Movie>> debouncedMovies = StreamController.broadcast();
+  StreamController<bool> isLoadingStream = StreamController.broadcast();
   Timer? _debounceTimer;
 
   SearchMovieDelegate({
@@ -22,11 +23,13 @@ class SearchMovieDelegate extends SearchDelegate<Movie?> {
   void clearStreams() => debouncedMovies.close();
 
   void _onQueryChange(String query) {
+    isLoadingStream.add(true);
     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
       final movies = await searchMovies(query);
       initialMovies = movies;
       debouncedMovies.add(movies);
+      isLoadingStream.add(false);
     });
   }
 
@@ -36,13 +39,31 @@ class SearchMovieDelegate extends SearchDelegate<Movie?> {
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
-      FadeIn(
-        animate: query.isNotEmpty,
-        child: IconButton(
-          onPressed: () => query = '',
-          icon: const Icon(Icons.clear),
-        ),
-      ),
+    StreamBuilder(
+      stream: isLoadingStream.stream,
+      builder: (context, snapshot) {
+        final bool isLoading = snapshot.data ?? false;
+        if (isLoading) {
+          return SpinPerfect(
+            duration: const Duration(seconds: 20),
+            spins: 10,
+            infinite: true,
+            child: IconButton(
+              onPressed: () => query = '',
+              icon: const Icon(Icons.refresh_rounded),
+            ),
+          );
+        } else {
+          return FadeIn(
+            animate: query.isNotEmpty,
+            child: IconButton(
+              onPressed: () => query = '',
+              icon: const Icon(Icons.clear),
+            ),
+          );
+        }
+      },
+    ),
     ];
   }
 
@@ -82,7 +103,6 @@ class SearchMovieDelegate extends SearchDelegate<Movie?> {
       },
     );
   }
-
 }
 
 class _MovieItem extends StatelessWidget {
