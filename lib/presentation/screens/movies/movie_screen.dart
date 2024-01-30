@@ -57,10 +57,8 @@ class _MovieDetails extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isOverviewExpanded = ref.watch(isOverviewExpandedProvider);
     final size = MediaQuery.of(context).size;
     final textStyles = Theme.of(context).textTheme;
-    final colors = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -84,27 +82,8 @@ class _MovieDetails extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(movie.title, style: textStyles.titleLarge),
-                    const SizedBox(height: 8),
-                    isOverviewExpanded
-                        ? Text(movie.overview)
-                        : Text(
-                            movie.overview,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                    const SizedBox(height: 4),
-                    GestureDetector(
-                      onTap: () => ref
-                          .read(isOverviewExpandedProvider.notifier)
-                          .update((state) => !state),
-                      child: Text(
-                        isOverviewExpanded ? 'Ver menos' : 'Ver más',
-                        style: TextStyle(
-                          color: colors.secondary,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    )
+                    if (movie.overview.isNotEmpty)
+                      _showMovieOverview(ref, context)
                   ],
                 ),
               ),
@@ -131,6 +110,37 @@ class _MovieDetails extends ConsumerWidget {
         ),
         _ActorsByMovie(movieId: movie.id.toString()),
         const SizedBox(height: 50),
+      ],
+    );
+  }
+
+  Widget _showMovieOverview(WidgetRef ref, BuildContext context) {
+    final bool isOverviewExpanded = ref.watch(isOverviewExpandedProvider);
+    final colors = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        isOverviewExpanded
+            ? Text(movie.overview)
+            : Text(
+                movie.overview,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+        const SizedBox(height: 4),
+        GestureDetector(
+          onTap: () => ref
+              .read(isOverviewExpandedProvider.notifier)
+              .update((state) => !state),
+          child: Text(
+            isOverviewExpanded ? 'Ver menos' : 'Ver más',
+            style: TextStyle(
+              color: colors.secondary,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
       ],
     );
   }

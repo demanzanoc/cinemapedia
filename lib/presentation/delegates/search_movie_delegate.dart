@@ -10,19 +10,22 @@ typedef SearchMovieCallback = Future<List<Movie>> Function(String query);
 
 class SearchMovieDelegate extends SearchDelegate<Movie?> {
   final SearchMovieCallback searchMovies;
+  List<Movie> initialMovies;
   StreamController<List<Movie>> debouncedMovies = StreamController.broadcast();
   Timer? _debounceTimer;
 
-  SearchMovieDelegate({required this.searchMovies});
+  SearchMovieDelegate({
+    required this.searchMovies,
+    required this.initialMovies,
+  });
+
+  void clearStreams() => debouncedMovies.close();
 
   void _onQueryChange(String query) {
     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
-      if (query.isEmpty) {
-        debouncedMovies.add([]);
-        return;
-      }
       final movies = await searchMovies(query);
+      initialMovies = movies;
       debouncedMovies.add(movies);
     });
   }
@@ -46,22 +49,27 @@ class SearchMovieDelegate extends SearchDelegate<Movie?> {
   @override
   Widget? buildLeading(BuildContext context) {
     return IconButton(
-      onPressed: () => close(context, null),
+      onPressed: () {
+        clearStreams();
+        close(context, null);
+      },
       icon: const Icon(Icons.arrow_back),
     );
   }
 
   @override
-  Widget buildResults(BuildContext context) {
-    return const Text('buildResults');
-  }
+  Widget buildResults(BuildContext context) => _buildResultsAndSuggestions();
 
   @override
   Widget buildSuggestions(BuildContext context) {
     _onQueryChange(query);
+    return _buildResultsAndSuggestions();
+  }
+
+  StreamBuilder _buildResultsAndSuggestions() {
     return StreamBuilder(
+      initialData: initialMovies,
       stream: debouncedMovies.stream,
-      initialData: const [],
       builder: (context, snapshot) {
         final movies = snapshot.data ?? [];
         return ListView.builder(
@@ -74,6 +82,7 @@ class SearchMovieDelegate extends SearchDelegate<Movie?> {
       },
     );
   }
+
 }
 
 class _MovieItem extends StatelessWidget {
