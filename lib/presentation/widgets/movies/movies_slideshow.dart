@@ -1,5 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:card_swiper/card_swiper.dart';
+import 'package:cinemapedia/config/router/routes.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -65,7 +66,7 @@ class _Slide extends StatelessWidget {
                 );
               }
               return GestureDetector(
-                onTap: () => context.push('/movie/${movie.id}'),
+                onTap: () => context.push('$defaultHomeRoute/movie/${movie.id}'),
                 child: FadeIn(child: child),
               );
             },

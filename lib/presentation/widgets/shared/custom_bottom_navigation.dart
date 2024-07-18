@@ -8,7 +8,7 @@ class CustomBottomNavigation extends StatelessWidget {
   final int currentIndex;
 
   void onTap(BuildContext context, int index) {
-    context.go('$initialRoute/$index');
+    context.go('$initialHomeRoute/$index');
   }
 
   @override
