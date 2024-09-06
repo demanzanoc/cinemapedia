@@ -3,7 +3,7 @@ import 'package:cinemapedia/domain/repositories/local_storage_repository.dart';
 import 'package:cinemapedia/presentation/providers/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final favorteMoviesProvider =
+final favoriteMoviesProvider =
     StateNotifierProvider<StorageMoviesNotifier, Map<int, Movie>>(
   (ref) {
     final localStorageRepository = ref.watch(localStorageRepositoryProvider);
@@ -32,7 +32,18 @@ class StorageMoviesNotifier extends StateNotifier<Map<int, Movie>> {
     }
 
     state = {...state, ...tempMoviesMap};
-    
+
     return movies;
+  }
+
+  Future<void> toogleFavorite(Movie movie) async {
+    await localStorageRepository.toggleFavorite(movie);
+    final bool isFavorite = state[movie.id] != null;
+    if (isFavorite) {
+      state.remove(movie.id);
+      state = {...state};
+    } else {
+      state = {...state, movie.id: movie};
+    }
   }
 }
